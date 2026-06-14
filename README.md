@@ -19,6 +19,9 @@ chmod +x deploy.sh diagnose.sh
 Panel: **http://SUNUCU-IP:8000** (IP `deploy.sh` çıktısında yazar)  
 Açılmazsa sunucuda: `./diagnose.sh` — [DEPLOY.md](./DEPLOY.md)
 
+> **Vercel kullanıyorsanız:** Vercel sadece arayüzdür, backend ayrı sunucuda olmalı.  
+> Detay: [VERCEL.md](./VERCEL.md)
+
 ---
 
 ## Windows (local)
