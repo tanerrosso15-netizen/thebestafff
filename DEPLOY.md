@@ -12,7 +12,7 @@ Backend **Heroku/Render yerine kendi sunucunuzda** çalışır. Repo’yu clone 
 ## Hızlı başlangıç (sunucuda)
 
 ```bash
-git clone https://github.com/tannertt82-ux/thebestaff.git
+git clone https://github.com/tanerrosso15-netizen/thebestafff.git
 cd thebestaff
 cp backend/.env.example backend/.env
 nano backend/.env          # SECRET_KEY, şifre, CORS_ORIGINS düzenleyin
@@ -28,7 +28,7 @@ chmod +x install.sh start.sh
 ## Docker (önerilen — production)
 
 ```bash
-git clone https://github.com/tannertt82-ux/thebestaff.git
+git clone https://github.com/tanerrosso15-netizen/thebestafff.git
 cd thebestaff
 cp backend/.env.example backend/.env
 nano backend/.env

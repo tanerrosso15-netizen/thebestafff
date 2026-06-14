@@ -3,14 +3,14 @@
 CasinoPera (Lynon) için **referans linki tabanlı affiliate yönetim paneli**.  
 Python (FastAPI) + React (Vite) + SQLite.
 
-**Repo:** https://github.com/tannertt82-ux/thebestaff
+**Repo:** https://github.com/tanerrosso15-netizen/thebestafff
 
 ---
 
 ## Sunucuda ayağa kaldırma (VPS)
 
 ```bash
-git clone https://github.com/tannertt82-ux/thebestaff.git
+git clone https://github.com/tanerrosso15-netizen/thebestafff.git
 cd thebestaff
 cp backend/.env.example backend/.env
 # backend/.env düzenle (SECRET_KEY, şifre)
