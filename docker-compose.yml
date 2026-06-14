@@ -4,16 +4,26 @@ services:
     container_name: pqp-affiliate
     restart: unless-stopped
     ports:
-      - "${PORT:-8000}:8000"
+      - "0.0.0.0:${PORT:-8000}:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-please-change-this-secret-key-min-32-chars-long}
+      MASTER_ADMIN_EMAIL: ${MASTER_ADMIN_EMAIL:-admin@panel.com}
+      MASTER_ADMIN_PASSWORD: ${MASTER_ADMIN_PASSWORD:-ordinarman34.}
+      DATABASE_URL: sqlite:///./data/pqp_affiliate.db
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      SYNC_ENABLED: ${SYNC_ENABLED:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
     env_file:
-      - backend/.env
+      - path: backend/.env
+        required: false
     volumes:
       - affiliate-data:/app/backend/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
       interval: 30s
-      timeout: 5s
-      retries: 3
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 volumes:
   affiliate-data:

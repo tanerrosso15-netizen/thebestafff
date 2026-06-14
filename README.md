@@ -11,14 +11,13 @@ Python (FastAPI) + React (Vite) + SQLite.
 
 ```bash
 git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestaff
-cp backend/.env.example backend/.env
-# backend/.env düzenle (SECRET_KEY, şifre)
-docker compose up -d --build
+cd thebestafff
+chmod +x deploy.sh diagnose.sh
+./deploy.sh
 ```
 
-Panel: **http://SUNUCU-IP:8000**  
-Detay: [DEPLOY.md](./DEPLOY.md)
+Panel: **http://SUNUCU-IP:8000** (IP `deploy.sh` çıktısında yazar)  
+Açılmazsa sunucuda: `./diagnose.sh` — [DEPLOY.md](./DEPLOY.md)
 
 ---
 

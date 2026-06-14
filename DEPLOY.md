@@ -13,23 +13,31 @@ Backend **Heroku/Render yerine kendi sunucunuzda** çalışır. Repo’yu clone 
 
 ```bash
 git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestaff
-cp backend/.env.example backend/.env
-nano backend/.env          # SECRET_KEY, şifre, CORS_ORIGINS düzenleyin
-chmod +x install.sh start.sh
-./install.sh               # ilk kurulum (bir kez)
-./start.sh                 # panel: http://SUNUCU-IP:8000
+cd thebestafff
+chmod +x deploy.sh diagnose.sh
+./deploy.sh
 ```
 
-**Giriş:** `admin@panel.com` / `.env` içindeki şifre
+**Giriş:** `admin@panel.com` / `.env` içindeki şifre (varsayılan: `ordinarman34.`)
+
+### Panel açılmıyorsa
+
+```bash
+./diagnose.sh
+curl http://127.0.0.1:8000/api/health    # sunucuda çalışıyorsa → firewall sorunu
+sudo ufw allow 8000/tcp && sudo ufw reload
+```
+
+Bulut panelinde (Hetzner, DigitalOcean, AWS) **Inbound TCP 8000** açın.  
+`localhost:8000` kendi bilgisayarınızdır — sunucunun **public IP** adresini kullanın.
 
 ---
 
-## Docker (önerilen — production)
+## Docker (manuel)
 
 ```bash
 git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestaff
+cd thebestafff
 cp backend/.env.example backend/.env
 nano backend/.env
 
