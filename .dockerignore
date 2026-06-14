@@ -1,0 +1,14 @@
+backend/venv/
+backend/.env
+backend/data/casinopera.cookie
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+backend/**/*.db
+frontend/node_modules/
+frontend/dist/
+**/__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+persist/
