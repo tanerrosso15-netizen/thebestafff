@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [branding, setBranding] = useState({ brand_name: "PQP", site_name: "CASINOPERA" });
+  const [branding, setBranding] = useState({ brand_name: "Affiliate Panel", site_name: "Platform" });
   const [loading, setLoading] = useState(true);
 
   async function loadMe() {
@@ -63,12 +63,33 @@ export function AuthProvider({ children }) {
     window.location.href = "/affiliates";
   }
 
-  const isAdmin = user && (user.role === "admin" || user.role === "manager");
+  function can(module, action = "view") {
+    if (!user) return false;
+    if (user.role === "admin") return true;
+    if (user.role === "affiliate") return false;
+    return !!user.permissions?.[module]?.[action];
+  }
+
+  const isStaffPanel =
+    user && (user.role === "admin" || user.role === "manager" || user.role === "staff");
+  const isAdmin = isStaffPanel;
   const impersonating = localStorage.getItem("pqp_imp");
 
   return (
     <AuthContext.Provider
-      value={{ user, branding, loading, login, logout, isAdmin, impersonate, stopImpersonate, impersonating }}
+      value={{
+        user,
+        branding,
+        loading,
+        login,
+        logout,
+        isAdmin,
+        isStaffPanel,
+        can,
+        impersonate,
+        stopImpersonate,
+        impersonating,
+      }}
     >
       {children}
     </AuthContext.Provider>

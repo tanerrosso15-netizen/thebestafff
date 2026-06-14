@@ -92,7 +92,7 @@ def create_affiliate(
         new_user = User(
             name=payload.name,
             email=payload.email.lower(),
-            password_hash=hash_password(payload.password or "affiliate123"),
+            password_hash=hash_password(payload.password or "demo-password-change-me"),
             role="affiliate",
             is_active=payload.is_active,
         )

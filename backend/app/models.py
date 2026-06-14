@@ -15,6 +15,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    JSON,
     String,
     Text,
 )
@@ -27,8 +28,43 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class PermissionGroup(Base):
+    """Yetki grubu — menü bazlı görüntüle / düzenle / sil."""
+
+    __tablename__ = "permission_groups"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    permissions: Mapped[dict] = mapped_column(JSON, default=dict)
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    users: Mapped[list["User"]] = relationship(back_populates="permission_group")
+
+
+class Merchant(Base):
+    """Platform / merchant yapılandırması (CasinoOpera fetcher, domainler)."""
+
+    __tablename__ = "merchants"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    infrastructure: Mapped[str] = mapped_column(String(60), default="casinopera")
+    trial_period: Mapped[str] = mapped_column(String(30), default="none")
+    fetcher_email: Mapped[str] = mapped_column(String(180), default="")
+    fetcher_password: Mapped[str] = mapped_column(String(255), default="")
+    fetcher_otp_secret: Mapped[str] = mapped_column(String(255), default="")
+    active_domain: Mapped[str] = mapped_column(String(255), default="")
+    active_affiliate_domain: Mapped[str] = mapped_column(String(255), default="")
+    backoffice_url: Mapped[str] = mapped_column(String(500), default="")
+    site_id: Mapped[str] = mapped_column(String(30), default="")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
 class User(Base):
-    """Giriş yapabilen hesap (admin / manager / affiliate)."""
+    """Giriş yapabilen hesap (admin / staff / affiliate)."""
 
     __tablename__ = "users"
 
@@ -37,10 +73,16 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(180), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(30), default="affiliate", nullable=False)
+    permission_group_id: Mapped[int | None] = mapped_column(
+        ForeignKey("permission_groups.id"), nullable=True
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    permission_group: Mapped["PermissionGroup | None"] = relationship(
+        back_populates="users"
+    )
     affiliate: Mapped["Affiliate | None"] = relationship(
         back_populates="user", uselist=False
     )

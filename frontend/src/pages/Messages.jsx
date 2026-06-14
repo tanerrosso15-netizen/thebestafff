@@ -119,7 +119,7 @@ export default function Messages() {
               <div className="chat-head">
                 <div className="chat-ava">{(activeThread?.affiliate_name || "?").charAt(0).toUpperCase()}</div>
                 <div>
-                  <div style={{ fontWeight: 700 }}>{isAdmin ? activeThread?.affiliate_name : "PQP Destek"}</div>
+                  <div style={{ fontWeight: 700 }}>{isAdmin ? activeThread?.affiliate_name : "Destek"}</div>
                   <div className="muted" style={{ fontSize: 12 }}>{activeThread?.btag ? `btag: ${activeThread.btag}` : "çevrimiçi"}</div>
                 </div>
               </div>

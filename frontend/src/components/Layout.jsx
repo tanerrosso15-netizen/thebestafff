@@ -4,29 +4,32 @@ import { useAuth } from "../context/AuthContext";
 import { Icon } from "./Icons";
 
 const ADMIN_NAV = [
-  { to: "/", label: "Gösterge Paneli", icon: "dashboard", end: true },
+  { to: "/", label: "Gösterge Paneli", icon: "dashboard", end: true, perm: "dashboard" },
   {
     label: "Affiliate",
     icon: "affiliate",
+    perm: "affiliates",
     children: [
-      { to: "/affiliates", label: "Affiliate Listesi" },
-      { to: "/groups", label: "Affiliate Grupları" },
+      { to: "/affiliates", label: "Affiliate Listesi", perm: "affiliates" },
+      { to: "/groups", label: "Affiliate Grupları", perm: "affiliate_groups" },
     ],
   },
-  { to: "/reports", label: "Raporlar", icon: "reports" },
-  { to: "/players", label: "Oyuncular", icon: "players" },
-  { to: "/withdrawals", label: "Çekim İstekleri", icon: "withdraw" },
-  { to: "/messages", label: "Mesajlar", icon: "message" },
-  { to: "/activities", label: "Aktiviteler", icon: "activity" },
+  { to: "/reports", label: "Raporlar", icon: "reports", perm: "reports" },
+  { to: "/players", label: "Oyuncular", icon: "players", perm: "players" },
+  { to: "/withdrawals", label: "Çekim İstekleri", icon: "withdraw", perm: "withdrawals" },
+  { to: "/messages", label: "Mesajlar", icon: "message", perm: "messages" },
+  { to: "/activities", label: "Aktiviteler", icon: "activity", perm: "activities" },
   {
     label: "Kullanıcılar",
     icon: "users",
+    perm: "users",
     children: [
-      { to: "/users", label: "Kullanıcı Listesi" },
-      { to: "/permissions", label: "Yetkilendirme" },
+      { to: "/users", label: "Kullanıcı Listesi", perm: "users" },
+      { to: "/permissions", label: "Yetkilendirme", perm: "permissions" },
     ],
   },
-  { to: "/settings", label: "Sistem Ayarları", icon: "settings" },
+  { to: "/merchants", label: "Merchant Bilgileri", icon: "settings", perm: "merchants" },
+  { to: "/settings", label: "Sistem Ayarları", icon: "settings", perm: "settings" },
 ];
 
 const AFFILIATE_NAV = [
@@ -81,10 +84,26 @@ function NavGroup({ item }) {
 }
 
 export default function Layout({ title, children }) {
-  const { user, branding, logout, isAdmin, impersonating, stopImpersonate } = useAuth();
+  const { user, branding, logout, isAdmin, can, impersonating, stopImpersonate } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const nav = isAdmin ? ADMIN_NAV : AFFILIATE_NAV;
+
+  function filterNav(items) {
+    return items
+      .map((item) => {
+        if (item.children) {
+          const children = item.children.filter((c) => !c.perm || can(c.perm, "view"));
+          if (!children.length && item.perm && !can(item.perm, "view")) return null;
+          if (!children.length) return null;
+          return { ...item, children };
+        }
+        if (item.perm && !can(item.perm, "view")) return null;
+        return item;
+      })
+      .filter(Boolean);
+  }
+
+  const nav = isAdmin ? filterNav(ADMIN_NAV) : AFFILIATE_NAV;
   const initials = (user?.name || "?").trim().charAt(0).toUpperCase();
 
   return (
@@ -93,7 +112,7 @@ export default function Layout({ title, children }) {
         <div className="sidebar-brand">
           <div className="brand-mark">PQ</div>
           <div>
-            <div className="brand-text">{branding.brand_name || "PQP"}</div>
+            <div className="brand-text">{branding.brand_name || "Affiliate Panel"}</div>
             <div className="brand-sub">AFFILIATE</div>
           </div>
         </div>

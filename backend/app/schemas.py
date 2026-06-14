@@ -27,6 +27,9 @@ class MeResponse(BaseModel):
     role: str
     affiliate_id: int | None = None
     btag: str | None = None
+    permission_group_id: int | None = None
+    permission_group_name: str | None = None
+    permissions: dict[str, dict[str, bool]] = Field(default_factory=dict)
 
 
 # ---------- User ----------
@@ -34,9 +37,9 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str = Field(min_length=4)
-    role: str = "affiliate"
+    role: str = "staff"
+    permission_group_id: int | None = None
     is_active: bool = True
-    # Affiliate hesabı oluşturulurken otomatik btag/komisyon
     commission_rate: float | None = None
     group_id: int | None = None
     parent_btag: str | None = None
@@ -48,6 +51,7 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     password: str | None = None
     role: str | None = None
+    permission_group_id: int | None = None
     is_active: bool | None = None
 
 
@@ -57,6 +61,8 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: str
+    permission_group_id: int | None = None
+    permission_group_name: str | None = None
     is_active: bool
     created_at: datetime
     last_login_at: datetime | None = None
@@ -269,3 +275,70 @@ class Paginated(BaseModel):
     total: int
     page: int
     per_page: int
+
+
+# ---------- RBAC ----------
+class PermissionGroupCreate(BaseModel):
+    name: str
+    permissions: dict[str, dict[str, bool]] = Field(default_factory=dict)
+
+
+class PermissionGroupUpdate(BaseModel):
+    name: str | None = None
+    permissions: dict[str, dict[str, bool]] | None = None
+
+
+class PermissionGroupOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    permissions: dict[str, dict[str, bool]]
+    is_system: bool
+    created_at: datetime
+
+
+# ---------- Merchant ----------
+class MerchantCreate(BaseModel):
+    name: str
+    infrastructure: str = "casinopera"
+    trial_period: str = "none"
+    fetcher_email: str = ""
+    fetcher_password: str = ""
+    fetcher_otp_secret: str = ""
+    active_domain: str = ""
+    active_affiliate_domain: str = ""
+    backoffice_url: str = ""
+    site_id: str = ""
+    is_active: bool = True
+
+
+class MerchantUpdate(BaseModel):
+    name: str | None = None
+    infrastructure: str | None = None
+    trial_period: str | None = None
+    fetcher_email: str | None = None
+    fetcher_password: str | None = None
+    fetcher_otp_secret: str | None = None
+    active_domain: str | None = None
+    active_affiliate_domain: str | None = None
+    backoffice_url: str | None = None
+    site_id: str | None = None
+    is_active: bool | None = None
+
+
+class MerchantOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    infrastructure: str
+    trial_period: str
+    fetcher_email: str
+    fetcher_password: str
+    fetcher_otp_secret: str
+    active_domain: str
+    active_affiliate_domain: str
+    backoffice_url: str
+    site_id: str
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime

@@ -1,141 +1,72 @@
-# Deploy Rehberi — Git + Sunucu (VPS)
+# Deploy Rehberi
 
-Backend **Heroku/Render yerine kendi sunucunuzda** çalışır. Repo’yu clone edip tek komutla ayağa kaldırırsınız.
+Backend kendi sunucunuzda çalışır. Repo clone → tek komut deploy.
 
 | Bileşen | Nerede |
 |---------|--------|
-| **Tam panel** (API + arayüz) | Kendi VPS / sunucu — `docker compose` veya `./start.sh` |
-| **Sadece arayüz** (opsiyonel) | Vercel — `frontend/` klasörü |
+| Tam panel (API + arayüz) | VPS — `docker compose` veya `./start.sh` |
+| Sadece arayüz (opsiyonel) | Vercel — `frontend/` |
 
 ---
 
-## Hızlı başlangıç (sunucuda)
+## Hızlı başlangıç
 
 ```bash
-git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestafff
+git clone <repository-url>
+cd affiliate-panel
 chmod +x deploy.sh diagnose.sh
 ./deploy.sh
 ```
 
-**Giriş:** `admin@panel.com` / `.env` içindeki şifre (varsayılan: `ordinarman34.`)
+Giriş: `.env` içindeki `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`
 
 ### Panel açılmıyorsa
 
 ```bash
 ./diagnose.sh
-curl http://127.0.0.1:8000/api/health    # sunucuda çalışıyorsa → firewall sorunu
+curl http://127.0.0.1:8000/api/health
 sudo ufw allow 8000/tcp && sudo ufw reload
 ```
 
-Bulut panelinde (Hetzner, DigitalOcean, AWS) **Inbound TCP 8000** açın.  
-`localhost:8000` kendi bilgisayarınızdır — sunucunun **public IP** adresini kullanın.
+Bulut firewall'unda **Inbound TCP 8000** açın.
 
 ---
 
 ## Docker (manuel)
 
 ```bash
-git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestafff
 cp backend/.env.example backend/.env
 nano backend/.env
-
 docker compose up -d --build
 docker compose logs -f
 ```
 
-- Panel: `http://SUNUCU-IP:8000`
-- Veritabanı + yüklemeler: Docker volume `affiliate-data` (kalıcı)
-- Güncelleme: `git pull && docker compose up -d --build`
-
-Port değiştirmek: `.env` yanına kökte `PORT=9000` veya `PORT=9000 docker compose up -d`
+Güncelleme: `git pull && docker compose up -d --build`
 
 ---
 
-## Güncelleme akışı (sizin workflow)
-
-1. Geliştirme yapılır (local)
-2. Bana “repo et” dediğinizde → push yapılır
-3. Sunucuda:
-
-```bash
-cd thebestaff
-git pull
-docker compose up -d --build
-# veya Docker yoksa: ./start.sh
-```
-
----
-
-## Ortam değişkenleri (`backend/.env`)
+## Ortam değişkenleri
 
 | Anahtar | Açıklama |
 |---------|----------|
-| `SECRET_KEY` | Uzun rastgele JWT anahtarı (production’da mutlaka değiştirin) |
-| `MASTER_ADMIN_PASSWORD` | Admin giriş şifresi |
-| `DATABASE_URL` | `sqlite:///./data/pqp_affiliate.db` (varsayılan) |
-| `CORS_ORIGINS` | Frontend domainleri (Vercel kullanıyorsanız ekleyin) |
-| `SEED_DEMO_DATA` | `false` — gerçek ortam |
-| `CASINOPERA_SESSION_FILE` | Cookie dosyası: `data/casinopera.cookie` |
-
-Cookie: backoffice oturumunu `backend/data/casinopera.cookie` dosyasına yapıştırın veya panelden kaydedin.
+| `SECRET_KEY` | Uzun rastgele anahtar |
+| `MASTER_ADMIN_PASSWORD` | Admin şifresi |
+| `DATABASE_URL` | `sqlite:///./data/affiliate.db` |
+| `CORS_ORIGINS` | Frontend domainleri |
+| `CASINOPERA_SESSION_FILE` | `data/platform.cookie` |
 
 ---
 
-## Vercel (opsiyonel — sadece frontend)
+## Vercel (opsiyonel)
 
-Backend ayrı sunucudaysa Vercel’de:
-
-| Ayar | Değer |
-|------|--------|
-| Root Directory | `frontend` |
-| Build | `npm run build` |
-| Output | `dist` |
-| Env | `VITE_API_URL=https://api.sizindomain.com` |
-
-Backend aynı sunucudaysa Vercel gerekmez — `docker compose` her şeyi sunar.
+Root Directory: `frontend`  
+Env: `VITE_API_URL=<backend-url>`  
+Detay: [VERCEL.md](./VERCEL.md)
 
 ---
 
-## Cloudflare DNS
+## Cloudflare / özel domain
 
-| Kayıt | Hedef |
-|-------|--------|
-| `aff.domain.com` | Sunucu IP (A kaydı) veya Vercel CNAME |
-| `api.domain.com` | Sunucu IP:8000 (nginx reverse proxy önerilir) |
+DNS A kaydı → sunucu IP. Nginx ile 443 → 8000 proxy önerilir.
 
-Nginx örneği (443 → 8000):
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name aff.domain.com;
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-Panel ayarlarında **Affiliate Domaini** ve **Panel Giriş URL** alanlarını kendi domaininize göre doldurun.
-
----
-
-## Sağlık kontrolü
-
-```bash
-curl http://localhost:8000/api/health
-# {"status":"ok","brand":"PQP"}
-```
-
----
-
-## Windows (local geliştirme)
-
-```bat
-start.bat
-```
-
-Panel: http://localhost:8000
+Sağlık kontrolü: `curl http://localhost:8000/api/health`

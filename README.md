@@ -1,26 +1,23 @@
-# PQP Affiliate Panel
+# Affiliate Management Panel
 
-CasinoPera (Lynon) için **referans linki tabanlı affiliate yönetim paneli**.  
+Referans linki tabanlı affiliate yönetim sistemi.  
 Python (FastAPI) + React (Vite) + SQLite.
-
-**Repo:** https://github.com/tanerrosso15-netizen/thebestafff
 
 ---
 
-## Sunucuda ayağa kaldırma (VPS)
+## Sunucuda ayağa kaldırma
 
 ```bash
-git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestafff
+git clone <repository-url>
+cd affiliate-panel
 chmod +x deploy.sh diagnose.sh
 ./deploy.sh
 ```
 
-Panel: **http://SUNUCU-IP:8000** (IP `deploy.sh` çıktısında yazar)  
-Açılmazsa sunucuda: `./diagnose.sh` — [DEPLOY.md](./DEPLOY.md)
+Panel: **http://SUNUCU-IP:8000**
 
-> **Vercel kullanıyorsanız:** Vercel sadece arayüzdür, backend ayrı sunucuda olmalı.  
-> Detay: [VERCEL.md](./VERCEL.md)
+> Vercel yalnızca arayüz içindir — tam panel için sunucu deploy kullanın.  
+> Detay: [DEPLOY.md](./DEPLOY.md) · [VERCEL.md](./VERCEL.md)
 
 ---
 
@@ -31,89 +28,39 @@ start.bat
 ```
 
 Panel: **http://localhost:8000**  
-Giriş: `admin@panel.com` / `.env` içindeki şifre
+Giriş bilgileri: `backend/.env` dosyasındaki `MASTER_ADMIN_EMAIL` / `MASTER_ADMIN_PASSWORD`
 
 ---
 
 ## Özellikler
 
-- **Admin paneli**: Gösterge Paneli, Affiliate Listesi/Grupları, Raporlar, Oyuncular, Çekim İstekleri, Aktiviteler, Kullanıcılar, Yetkilendirme, Sistem Ayarları.
-- **Affiliate paneli**: kendi gösterge paneli, referans linkleri, alt affiliateler, oyuncuları, çekim istekleri.
-- **Referans linki sistemi**: her affiliate'e benzersiz `btag` → link üzerinden gelen oyuncular otomatik affiliate'e bağlanır.
-- **Çok kademeli (multi-level)**: bir affiliate başka affiliate getirebilir (`parent_btag`).
-- **CasinoPera entegrasyonu**: cookie ile backoffice'ten oyuncu verisi çekme + **periyodik dinamik senkronizasyon** (varsayılan 5 dk).
-- **SQL fallback**: cookie yoksa panel yerel veriyle (demo dahil) tam çalışır.
+- Admin paneli: dashboard, affiliate, raporlar, oyuncular, çekim, mesajlaşma, ayarlar
+- Affiliate paneli: referans linkleri, alt btag, oyuncular, canlı destek
+- Platform backoffice entegrasyonu (cookie + periyodik senkron)
+- Docker ile tek komut deploy
 
-## Hızlı Başlangıç (tek komut)
+---
 
-```bat
-start.bat
-```
+## Yapılandırma
 
-İlk çalıştırmada sanal ortamı kurar, frontend'i derler ve sunucuyu başlatır:
-
-- Panel: **http://localhost:8000**
-- Giriş (admin): `admin@panel.com` / `ordinarman34.`
-- Demo affiliate girişi: `seo3@example.com` / `affiliate123`
-
-## Geliştirme Modu
-
-```bat
-dev.bat
-```
-
-- Backend (API): http://localhost:8000  (otomatik reload)
-- Frontend (Vite): http://localhost:5173 (API'ye proxy)
-
-## Manuel Kurulum
-
-**Backend**
-```powershell
-cd backend
-python -m venv venv
-venv\Scripts\python.exe -m pip install -r requirements.txt
-copy .env.example .env
-venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
-```
-
-**Frontend**
-```powershell
-cd frontend
-npm install
-npm run dev      # geliştirme
-npm run build    # production (backend otomatik servis eder)
-```
-
-## CasinoPera Bağlantısı
-
-1. Panelde **Sistem Ayarları → CasinoPera Entegrasyonu**'na gidin.
-2. Backoffice oturum cookie'sini yapıştırıp kaydedin (veya `backend/data/casinopera.cookie` dosyasına yazın).
-3. **Şimdi Senkronize Et** ile test edin. Sonrasında veriler periyodik olarak güncellenir.
-
-Cookie geçerli olduğunda gerçek oyuncular `btag` üzerinden affiliatelere bağlanır.
-
-## Referans Akışı
-
-1. Admin, **Kullanıcılar** veya **Affiliate Listesi**'nden bir affiliate oluşturur → otomatik `btag` ve giriş hesabı üretilir.
-2. Affiliate kendi panelinden referans linkini alır:
-   - Doğrudan: `https://www.casinopera.com/?btag=<btag>`
-   - İzlenebilir (tıklama sayar): `http://<panel>/r/<btag>`
-3. Link üzerinden gelen oyuncular CasinoPera'ya `btag` ile kaydolur.
-4. Senkronizasyon oyuncuları `btag` eşleşmesiyle affiliate'e bağlar; komisyon ve istatistikler panele yansır.
-
-## Yapılandırma (`backend/.env`)
+Tüm ayarlar `backend/.env` içinde. Örnek: `backend/.env.example`
 
 | Anahtar | Açıklama |
-|--------|----------|
-| `MASTER_ADMIN_EMAIL/PASSWORD` | İlk admin hesabı |
+|---------|----------|
+| `SECRET_KEY` | JWT güvenlik anahtarı |
+| `MASTER_ADMIN_EMAIL/PASSWORD` | İlk admin |
+| `BRAND_NAME` / `SITE_NAME` | Marka (panelden de düzenlenebilir) |
 | `REFERRAL_BASE_URL` | Referans linki kök adresi |
-| `CASINOPERA_SITE_ID` | Site kimliği (varsayılan 125) |
-| `CASINOPERA_SESSION_FILE` | Cookie dosyası yolu |
-| `SYNC_INTERVAL_SECONDS` | Periyodik senkron aralığı |
-| `SEED_DEMO_DATA` | İlk açılışta demo veri üret |
+| `CASINOPERA_*` | Platform backoffice API ayarları |
+| `SEED_DEMO_DATA` | Demo veri (`false` önerilir) |
 
-## MongoDB Geçişi (sonra)
+---
 
-DB erişimi servis katmanında soyutlandı. MongoDB eklenince:
-`DATABASE_URL` yerine Mongo adaptörü yazılır; modeller/şemalar aynı kalır.
+## Güncelleme
+
+```bash
+git pull
+docker compose up -d --build
 ```
+
+Detaylı deploy: [DEPLOY.md](./DEPLOY.md)

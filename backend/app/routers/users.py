@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import require_admin, require_superadmin
-from app.models import Affiliate, User
+from app.deps import require_permission, require_superadmin
+from app.models import Affiliate, PermissionGroup, User
 from app.schemas import UserCreate, UserOut, UserUpdate
 from app.security import hash_password
 from app.services.referral import generate_btag
@@ -18,26 +18,36 @@ def _to_out(db: Session, u: User) -> UserOut:
     out = UserOut.model_validate(u)
     aff = db.query(Affiliate).filter(Affiliate.user_id == u.id).first()
     out.affiliate_id = aff.id if aff else None
+    if u.permission_group_id:
+        grp = db.query(PermissionGroup).filter(PermissionGroup.id == u.permission_group_id).first()
+        out.permission_group_name = grp.name if grp else None
     return out
 
 
 @router.get("", response_model=list[UserOut])
-def list_users(user: User = Depends(require_admin), db: Session = Depends(get_db)):
+def list_users(user: User = Depends(require_permission("users", "view")), db: Session = Depends(get_db)):
     rows = db.query(User).order_by(User.created_at.desc()).all()
     return [_to_out(db, u) for u in rows]
 
 
 @router.post("", response_model=UserOut)
 def create_user(
-    payload: UserCreate, user: User = Depends(require_admin), db: Session = Depends(get_db)
+    payload: UserCreate, user: User = Depends(require_permission("users", "edit")), db: Session = Depends(get_db)
 ):
     if db.query(User).filter(User.email == payload.email.lower()).first():
         raise HTTPException(status_code=400, detail="Bu e-posta zaten kayıtlı.")
+    if payload.role in ("staff", "manager") and not payload.permission_group_id:
+        raise HTTPException(status_code=400, detail="Personel kullanıcı için yetki grubu seçin.")
+    if payload.role == "staff" and payload.permission_group_id:
+        grp = db.query(PermissionGroup).filter(PermissionGroup.id == payload.permission_group_id).first()
+        if not grp:
+            raise HTTPException(status_code=400, detail="Yetki grubu bulunamadı.")
     new_user = User(
         name=payload.name,
         email=payload.email.lower(),
         password_hash=hash_password(payload.password),
         role=payload.role,
+        permission_group_id=payload.permission_group_id,
         is_active=payload.is_active,
     )
     db.add(new_user)
@@ -70,7 +80,7 @@ def create_user(
 def update_user(
     user_id: int,
     payload: UserUpdate,
-    user: User = Depends(require_admin),
+    user: User = Depends(require_permission("users", "edit")),
     db: Session = Depends(get_db),
 ):
     target = db.query(User).filter(User.id == user_id).first()
@@ -92,7 +102,7 @@ def update_user(
 
 @router.patch("/{user_id}/toggle", response_model=UserOut)
 def toggle_user(
-    user_id: int, user: User = Depends(require_admin), db: Session = Depends(get_db)
+    user_id: int, user: User = Depends(require_permission("users", "edit")), db: Session = Depends(get_db)
 ):
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
@@ -105,7 +115,7 @@ def toggle_user(
 
 @router.delete("/{user_id}")
 def delete_user(
-    user_id: int, user: User = Depends(require_superadmin), db: Session = Depends(get_db)
+    user_id: int, user: User = Depends(require_permission("users", "delete")), db: Session = Depends(get_db)
 ):
     target = db.query(User).filter(User.id == user_id).first()
     if not target:

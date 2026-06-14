@@ -1100,6 +1100,49 @@ table.tbl tbody tr:last-child td {
 }
 .chat-empty { display: grid; place-items: center; height: 100%; color: var(--ink-soft); }
 
+/* ---------- Permissions RBAC ---------- */
+.perm-shell {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 18px;
+  align-items: start;
+}
+.perm-list { min-height: 420px; }
+.perm-row-active { background: rgba(124, 58, 237, 0.08); }
+.perm-accordion { display: flex; flex-direction: column; gap: 8px; }
+.perm-acc-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel-soft);
+}
+.perm-acc-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.perm-acc-body { padding: 0 14px 12px; }
+.perm-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.perm-edit-lbl { color: var(--warn); font-weight: 600; }
+.merchant-form .req { color: var(--danger); }
+
+@media (max-width: 1100px) {
+  .perm-shell { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }

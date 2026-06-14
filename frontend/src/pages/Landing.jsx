@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../api/client";
 
 const DEFAULTS = {
-  brand_name: "PQP",
-  site_name: "CASINOPERA",
+  brand_name: "Affiliate Panel",
+  site_name: "Platform",
   landing_title: "Affiliate Ortaklık Programı",
   landing_subtitle: "Kazançlarınızı tek panelden yönetin",
   landing_description:
@@ -32,7 +32,7 @@ export default function Landing() {
 
       <header className="landing-header">
         <div className="landing-brand">
-          <div className="brand-mark">PQ</div>
+          <div className="brand-mark">AP</div>
           <div>
             <div className="brand-text">{cfg.brand_name}</div>
             <div className="brand-sub">AFFILIATE</div>

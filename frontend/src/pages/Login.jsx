@@ -6,7 +6,7 @@ import { apiError } from "../api/client";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@panel.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,10 +30,10 @@ export default function Login() {
       <div className="login-hero">
         <div className="lh-brand">
           <div className="brand-mark" style={{ width: 44, height: 44, fontSize: 18 }}>
-            PQ
+            AP
           </div>
           <div className="brand-text" style={{ fontSize: 22 }}>
-            PQP
+            Affiliate
           </div>
         </div>
         <div className="lh-mid">
@@ -43,7 +43,7 @@ export default function Login() {
             Yönetim Paneli
           </h1>
           <p>
-            CasinoPera altyapısına entegre, referans linki tabanlı affiliate sistemi.
+            Referans linki tabanlı affiliate yönetim sistemi.
             Oyuncularınızı, komisyonlarınızı ve performansınızı tek panelden yönetin.
           </p>
           <div className="lh-stats">
@@ -58,7 +58,7 @@ export default function Login() {
           </div>
         </div>
         <div style={{ zIndex: 1, opacity: 0.7, fontSize: 13 }}>
-          © {new Date().getFullYear()} PQP Affiliate
+          © {new Date().getFullYear()} Affiliate Panel
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@panel.com"
+              placeholder="admin@example.com"
               required
             />
           </div>

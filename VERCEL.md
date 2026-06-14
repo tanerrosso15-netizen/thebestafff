@@ -1,82 +1,43 @@
-# Vercel Kurulumu (Sadece Arayüz)
+# Vercel (Sadece Arayüz)
 
-> **Önemli:** Vercel Python backend çalıştırmaz.  
-> Vercel = sadece React arayüzü. API için ayrı sunucu (VPS + Docker) gerekir.
-
----
-
-## Ne görüyorsunuz?
-
-Vercel deploy **Ready** = arayüz dosyaları yüklendi.  
-Bu, panelin **tam çalıştığı** anlamına gelmez — login ve veriler **backend API** ister.
-
-| Adres | Ne |
-|-------|-----|
-| `*.vercel.app` | Sadece frontend (React) |
-| Backend API | VPS’te `docker compose` veya başka sunucu |
+Vercel Python backend çalıştırmaz. Tam panel için sunucu deploy kullanın.
 
 ---
 
-## Vercel ayarları (Project Settings)
+## Vercel ayarları
 
-1. **General → Root Directory**  
-   - `frontend` seçin **VEYA** boş bırakın (kök `vercel.json` halleder)
+| Ayar | Değer |
+|------|--------|
+| Root Directory | `frontend` veya boş (kök `vercel.json`) |
+| Env | `VITE_API_URL` = backend URL |
 
-2. **Environment Variables** (Production):
+Env ekledikten sonra **Redeploy** gerekir.
 
-| Key | Value |
-|-----|--------|
-| `VITE_API_URL` | Backend URL’niz, örn. `https://api.sizindomain.com` veya `http://SUNUCU-IP:8000` |
-
-3. **Deployments → Redeploy** (env ekledikten sonra zorunlu)
-
-4. **Deployment Protection** kapalı olsun (401 verir):
-   - Settings → Deployment Protection → Production → **Off** (test için)
+Deployment Protection test için kapalı olmalı (401 verir).
 
 ---
 
-## Doğru akış (2 parça)
+## Doğru akış
 
 ```
-Tarayıcı → Vercel (React)  →  VITE_API_URL  →  VPS (FastAPI :8000)
+Tarayıcı → Vercel (React) → VITE_API_URL → Sunucu (FastAPI :8000)
 ```
 
-### Adım A — Backend (VPS, SSH)
+### Backend (VPS)
 
 ```bash
-git clone https://github.com/tanerrosso15-netizen/thebestafff.git
-cd thebestafff
-chmod +x deploy.sh
+git clone <repository-url>
+cd affiliate-panel
 ./deploy.sh
 ```
 
-Backend adresi örnek: `http://185.x.x.x:8000`  
-Test: `curl http://185.x.x.x:8000/api/health`
+### Vercel
 
-### Adım B — Vercel
-
-- `VITE_API_URL` = `http://185.x.x.x:8000` (HTTPS backend varsa onu kullanın)
-- Redeploy
-- `backend/.env` içinde: `CORS_ORIGINS=https://project-xofix-....vercel.app`
+`VITE_API_URL` = backend adresi  
+Backend `.env`: `CORS_ORIGINS=https://your-app.vercel.app`
 
 ---
 
-## Sadece Vercel kullanmak istemiyorsanız (tek link)
+## Tek adres istiyorsanız
 
-Vercel’i kapatın, sadece VPS:
-
-```bash
-./deploy.sh
-```
-
-Panel: `http://SUNUCU-IP:8000` — hem arayüz hem API aynı adreste.
-
----
-
-## Sizin deploy bilgisi
-
-- **Commit:** `b12be7f` — eski; `git pull` ile `2de95fb+` alın
-- **Domain:** `project-xofix-....vercel.app`
-- **401 Unauthorized:** Deployment Protection açık olabilir
-
-Son commit’i almak için Vercel → Deployments → **Redeploy** veya GitHub’a yeni push.
+Vercel kullanmayın — sadece `./deploy.sh` → `http://SUNUCU-IP:8000`

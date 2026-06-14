@@ -1,4 +1,4 @@
-"""PQP Affiliate Panel — FastAPI uygulaması."""
+"""Affiliate Panel — FastAPI uygulaması."""
 from __future__ import annotations
 
 import asyncio
@@ -21,6 +21,8 @@ from app.routers import (
     groups,
     messages,
     players,
+    permissions,
+    merchants,
     public_api,
     referral,
     subbtags,
@@ -33,7 +35,7 @@ from app.services.seed import run_seed
 from app.services.sync_service import run_sync
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-logger = logging.getLogger("pqp.affiliate")
+logger = logging.getLogger("affiliate.panel")
 
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
@@ -59,12 +61,12 @@ async def lifespan(app: FastAPI):
         db.close()
     start_scheduler()
     asyncio.create_task(_initial_sync())
-    logger.info("PQP Affiliate Panel başladı.")
+    logger.info("Affiliate panel başladı.")
     yield
     shutdown_scheduler()
 
 
-app = FastAPI(title="PQP Affiliate Panel", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Affiliate Panel", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,6 +89,8 @@ for r in (
     referral.router,
     subbtags.router,
     messages.router,
+    permissions.router,
+    merchants.router,
     public_api.router,
 ):
     app.include_router(r)

@@ -12,15 +12,26 @@ from app.models import (
     Activity,
     Affiliate,
     AffiliateGroup,
+    PermissionGroup,
     Player,
     ReferralClick,
     User,
     WithdrawalRequest,
 )
+from app.rbac import full_permissions
 from app.security import hash_password
 from app.services.referral import generate_btag
 
 logger = logging.getLogger(__name__)
+
+
+def seed_rbac(db: Session) -> None:
+    if db.query(PermissionGroup).count() > 0:
+        return
+    grp = PermissionGroup(name="ADMIN", permissions=full_permissions(), is_system=True)
+    db.add(grp)
+    db.commit()
+    logger.info("Varsayılan ADMIN yetki grubu oluşturuldu.")
 
 
 def seed_admin(db: Session) -> None:
@@ -40,18 +51,14 @@ def seed_admin(db: Session) -> None:
 
 
 _DEMO_NAMES = [
-    ("Seo3", "seo3"),
-    ("Seoday", "seoday"),
-    ("KingAff", "kingaff"),
-    ("Bonuslap", "bonuslap"),
-    ("KodKazandir", "kodkazandir"),
-    ("BonusAkademi", "bonusakademi"),
-    ("MegaPartner", "megapartner"),
-    ("WinAffiliate", "winaffiliate"),
+    ("Partner Alpha", "partner_a"),
+    ("Partner Beta", "partner_b"),
+    ("Partner Gamma", "partner_c"),
+    ("Partner Delta", "partner_d"),
 ]
 
-_FIRST = ["Kenan", "Mücahit", "Volkan", "İzzet", "Habib", "Celalettin", "Ahmet", "Mehmet", "Selin", "Derya"]
-_LAST = ["Gök", "Bilek", "Zorlu", "Gündüz", "Demir", "Yıldız", "Kaya", "Aydın", "Çelik", "Şahin"]
+_FIRST = ["Alex", "Jordan", "Taylor", "Casey", "Morgan", "Riley", "Quinn", "Avery"]
+_LAST = ["Smith", "Brown", "Lee", "Wilson", "Clark", "Hall", "Young", "King"]
 
 
 def seed_demo(db: Session) -> None:
@@ -77,7 +84,7 @@ def seed_demo(db: Session) -> None:
         user = User(
             name=display,
             email=email,
-            password_hash=hash_password("affiliate123"),
+            password_hash=hash_password("demo-password-change-me"),
             role="affiliate",
             is_active=True,
         )
@@ -184,5 +191,6 @@ def seed_demo(db: Session) -> None:
 
 
 def run_seed(db: Session) -> None:
+    seed_rbac(db)
     seed_admin(db)
     seed_demo(db)

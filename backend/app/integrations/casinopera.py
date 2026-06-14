@@ -1,8 +1,4 @@
-"""CasinoOpera / Lynon backoffice istemcisi.
-
-Cookie tabanlı oturum ile oyuncu listesini ve finansal özetleri çeker.
-Cookie geçerli değilse (veya hiç yoksa) panel SQL fallback verisiyle çalışır.
-"""
+"""Platform backoffice API istemcisi."""
 from __future__ import annotations
 
 import logging
@@ -20,7 +16,7 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
-# CasinoOpera backoffice alan eşlemesi (PQP referans config ile aynı)
+# Backoffice alan eşlemesi
 FIELD_MAP = {
     "external_id": "userId",
     "username": "userName",
@@ -45,7 +41,7 @@ def normalize_cookie(raw: str) -> str:
 
 
 def _session_file() -> Path:
-    rel = (settings.casinopera_session_file or "data/casinopera.cookie").strip()
+    rel = (settings.casinopera_session_file or "data/platform.cookie").strip()
     p = Path(rel)
     return p if p.is_absolute() else PROJECT_ROOT / p
 
@@ -73,10 +69,23 @@ def save_cookie_file(cookie: str) -> Path:
     return f
 
 
-_ROOT = "https://backoffice.casinopera.com"
-PAYMENT_BASE = f"{_ROOT}/api/payment-operations/api/v1.0"
-OPERATION_BASE = f"{_ROOT}/api/operation/api/v1.0"
-SPORT_BASE = f"{_ROOT}/api/sportOperation/api/v1.0"
+def _api_root() -> str:
+    base = settings.casinopera_base_url.rstrip("/")
+    for suffix in ("/api/user/api/v1.0", "/api/v1.0"):
+        if base.endswith(suffix):
+            return base[: -len(suffix)]
+    if "/api/" in base:
+        return base.rsplit("/api/", 1)[0]
+    return base
+
+
+def _payment_bases() -> tuple[str, str, str]:
+    root = _api_root()
+    return (
+        f"{root}/api/payment-operations/api/v1.0",
+        f"{root}/api/operation/api/v1.0",
+        f"{root}/api/sportOperation/api/v1.0",
+    )
 
 
 class CasinoOperaClient:
@@ -94,7 +103,7 @@ class CasinoOperaClient:
             "Cookie": self.cookie,
             "Accept": "application/json",
             "sl-id": str(self.site_id),
-            "User-Agent": "Mozilla/5.0 PQP-Affiliate/1.0",
+            "User-Agent": "Mozilla/5.0 AffiliatePanel/1.0",
         }
 
     async def fetch_players(self, page: int = 1, per_page: int = 100) -> list[dict[str, Any]]:
@@ -146,15 +155,18 @@ class CasinoOperaClient:
         return out
 
     async def fetch_transactions(self, user_id: str) -> list[dict[str, Any]]:
-        url = f"{PAYMENT_BASE}/backofficeTransactions/users/{user_id}/sites/{self.site_id}"
+        payment_base, _, _ = _payment_bases()
+        url = f"{payment_base}/backofficeTransactions/users/{user_id}/sites/{self.site_id}"
         return await self._get_list(url, {"siteId": str(self.site_id), "countPerPage": "100"})
 
     async def fetch_casino_bets(self, user_id: str) -> list[dict[str, Any]]:
-        url = f"{OPERATION_BASE}/backOffices/players/{user_id}/site/{self.site_id}"
+        _, operation_base, _ = _payment_bases()
+        url = f"{operation_base}/backOffices/players/{user_id}/site/{self.site_id}"
         return await self._get_list(url, {"siteId": str(self.site_id), "countPerPage": "100"}, max_pages=3)
 
     async def fetch_sport_bets(self, user_id: str) -> list[dict[str, Any]]:
-        url = f"{SPORT_BASE}/sportBetEvent/players/{user_id}/site/{self.site_id}"
+        _, _, sport_base = _payment_bases()
+        url = f"{sport_base}/sportBetEvent/players/{user_id}/site/{self.site_id}"
         return await self._get_list(url, {"siteId": str(self.site_id), "countPerPage": "100"}, max_pages=3)
 
     async def probe(self) -> dict[str, Any]:
@@ -182,7 +194,7 @@ def _as_list(data: Any) -> list[dict[str, Any]]:
 
 
 def map_player(raw: dict[str, Any]) -> dict[str, Any]:
-    """Ham API kaydını iç şemaya çevirir (CasinoPera userBackOffice listesi)."""
+    """Ham API kaydını iç şemaya çevirir."""
     def g(*keys: str) -> Any:
         for k in keys:
             if k in raw and raw[k] not in (None, ""):

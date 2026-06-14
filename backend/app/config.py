@@ -13,32 +13,36 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
 
     # Veritabanı (SQLite fallback; ileride MongoDB)
-    database_url: str = "sqlite:///./pqp_affiliate.db"
+    database_url: str = "sqlite:///./data/affiliate.db"
 
     # Master admin
     master_admin_name: str = "ADMIN"
-    master_admin_email: str = "admin@panel.com"
-    master_admin_password: str = "ordinarman34."
+    master_admin_email: str = "admin@example.com"
+    master_admin_password: str = "change-me-on-first-setup"
 
     # Marka / panel
-    brand_name: str = "PQP"
+    brand_name: str = "Affiliate Panel"
     panel_title: str = "Admin"
-    site_name: str = "CASINOPERA"
+    site_name: str = "Platform"
 
     # Referans linki
-    referral_base_url: str = "https://www.casinopera.com/"
+    referral_base_url: str = "https://your-platform.example/"
 
-    # CasinoOpera / Lynon
+    # Platform backoffice entegrasyonu
     casinopera_enabled: bool = True
-    casinopera_base_url: str = "https://backoffice.casinopera.com/api/user/api/v1.0"
-    casinopera_site_id: str = "125"
+    casinopera_base_url: str = "https://backoffice.example/api/v1.0"
+    casinopera_site_id: str = "1"
     casinopera_session_cookie: str = ""
-    casinopera_session_file: str = "data/casinopera.cookie"
+    casinopera_session_file: str = "data/platform.cookie"
     platform_api_timeout: int = 30
 
     # Periyodik senkronizasyon
     sync_interval_seconds: int = 300
     sync_enabled: bool = True
+    sync_mode: str = "cron"  # cron | interval
+    sync_cron_hour: int = 0  # gece 00:00
+    sync_cron_minute: int = 0
+    sync_timezone: str = "Europe/Istanbul"
 
     # Demo veri
     seed_demo_data: bool = True

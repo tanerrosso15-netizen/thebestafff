@@ -1,15 +1,15 @@
 services:
   affiliate:
     build: .
-    container_name: pqp-affiliate
+    container_name: affiliate-panel
     restart: unless-stopped
     ports:
       - "0.0.0.0:${PORT:-8000}:8000"
     environment:
       SECRET_KEY: ${SECRET_KEY:-please-change-this-secret-key-min-32-chars-long}
-      MASTER_ADMIN_EMAIL: ${MASTER_ADMIN_EMAIL:-admin@panel.com}
-      MASTER_ADMIN_PASSWORD: ${MASTER_ADMIN_PASSWORD:-ordinarman34.}
-      DATABASE_URL: sqlite:///./data/pqp_affiliate.db
+      MASTER_ADMIN_EMAIL: ${MASTER_ADMIN_EMAIL:-admin@example.com}
+      MASTER_ADMIN_PASSWORD: ${MASTER_ADMIN_PASSWORD:-change-me-on-first-setup}
+      DATABASE_URL: sqlite:///./data/affiliate.db
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
       SYNC_ENABLED: ${SYNC_ENABLED:-true}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}

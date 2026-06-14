@@ -1,4 +1,4 @@
-"""Periyodik senkronizasyon — oyuncu verilerini ara ara dinamik kontrol eder."""
+"""Periyodik senkronizasyon — varsayılan: her gece 00:00 (Europe/Istanbul)."""
 from __future__ import annotations
 
 import logging
@@ -17,7 +17,7 @@ _scheduler: AsyncIOScheduler | None = None
 async def _sync_job() -> None:
     db = SessionLocal()
     try:
-        await run_sync(db)
+        await run_sync(db, deep=True)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Periyodik senkron hatası: %s", exc)
     finally:
@@ -31,11 +31,29 @@ def start_scheduler() -> None:
         return
     if _scheduler is not None:
         return
-    _scheduler = AsyncIOScheduler(timezone="UTC")
-    interval = max(30, settings.sync_interval_seconds)
-    _scheduler.add_job(_sync_job, "interval", seconds=interval, id="player_sync", max_instances=1)
+    tz = settings.sync_timezone
+    _scheduler = AsyncIOScheduler(timezone=tz)
+
+    if settings.sync_mode == "interval":
+        interval = max(30, settings.sync_interval_seconds)
+        _scheduler.add_job(_sync_job, "interval", seconds=interval, id="player_sync", max_instances=1)
+        logger.info("Scheduler başladı — her %ss senkron.", interval)
+    else:
+        _scheduler.add_job(
+            _sync_job,
+            "cron",
+            hour=settings.sync_cron_hour,
+            minute=settings.sync_cron_minute,
+            id="player_sync",
+            max_instances=1,
+        )
+        logger.info(
+            "Scheduler başladı — her gün %02d:%02d (%s) senkron.",
+            settings.sync_cron_hour,
+            settings.sync_cron_minute,
+            tz,
+        )
     _scheduler.start()
-    logger.info("Scheduler başladı — her %ss senkron.", interval)
 
 
 def shutdown_scheduler() -> None:
